@@ -10,6 +10,7 @@ import (
 	"sync"
 )
 
+// OrderCache represent cache structure
 type OrderCache struct {
 	orders      map[string]*model.Order
 	rabbitCli   *brokers.RabbitClient
@@ -18,6 +19,7 @@ type OrderCache struct {
 	mutex       sync.Mutex
 }
 
+// NewCache return new cache instance and run kafka & rabbitmq consumers
 func NewCache(ctx context.Context, kafkaCli *brokers.KafkaClient, kafkaReader *brokers.KafkaReader, rabbitQueueName string, rabbitCli *brokers.RabbitClient) *OrderCache {
 	var cache OrderCache
 	cache.orders = make(map[string]*model.Order)
@@ -83,6 +85,7 @@ func NewCache(ctx context.Context, kafkaCli *brokers.KafkaClient, kafkaReader *b
 	return &cache
 }
 
+//Get method return order object from cache or take it from repository
 func (orderCache *OrderCache) Get(orderID string) (*model.Order, bool) {
 	orderCache.mutex.Lock()
 	defer orderCache.mutex.Unlock()
@@ -90,21 +93,22 @@ func (orderCache *OrderCache) Get(orderID string) (*model.Order, bool) {
 	return order, found
 }
 
-//Save method send message to redis stream for saving order
+//Save method send message to rabbit/kafka queue for saving order
 func (orderCache *OrderCache) Save(order *model.Order) error {
 	return orderCache.rabbitCli.PublishMessage("save", order)
 }
 
-// Update method send message to redis stream for updating order
+// Update method send message to rabbit/kafka queue stream for updating order
 func (orderCache *OrderCache) Update(order *model.Order) error {
 	return orderCache.rabbitCli.PublishMessage("update", order)
 }
 
-// Delete method send message to redis stream for removing order
+// Delete method send message to rabbit/kafka queue for removing order
 func (orderCache *OrderCache) Delete(orderID string) error {
 	return orderCache.rabbitCli.PublishMessage("delete", &model.Order{OrderID: orderID})
 }
 
+// brokerHandler handle messages from broker
 func (orderCache *OrderCache) brokerHandler(method string, order *model.Order) error {
 	orderCache.mutex.Lock()
 	defer orderCache.mutex.Unlock()

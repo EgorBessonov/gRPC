@@ -20,6 +20,7 @@ type AuthUser struct {
 	ExpiresIn    string `json:"expiresIn"`
 }
 
+// OrderMessage struct represents message to broker
 type OrderMessage struct {
 	Method string
 	Data   *Order
