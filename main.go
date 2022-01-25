@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/EgorBessonov/gRPC/internal/brokers"
+	"github.com/EgorBessonov/gRPC/internal/broker"
 	"github.com/EgorBessonov/gRPC/internal/cache"
 	"github.com/EgorBessonov/gRPC/internal/config"
 	ordercrud "github.com/EgorBessonov/gRPC/internal/protocol"
@@ -58,14 +58,14 @@ func main() {
 	if err != nil {
 		log.Fatal("kafka: error while creating reader - %e", err)
 	}
-	orderCache := cache.NewCache(cacheContext, brokers.NewKafkaClient(kafkaConn), brokers.NewKafkaReader(kReader), cfg.RabbitQueueName, rabbitCli)
+	orderCache := cache.NewCache(cacheContext, broker.NewKafkaClient(kafkaConn), broker.NewKafkaReader(kReader), cfg.RabbitQueueName, rabbitCli)
 	orderService := service.NewService(repos, orderCache)
 	gRPCServer := server.NewServer(orderService)
 	newgRPCServer(cfg.PortgRPC, gRPCServer)
 }
 
 // return new rabbit client instance
-func rabbitConnection(cfg config.Config) (*amqp.Connection, *brokers.RabbitClient, error) {
+func rabbitConnection(cfg config.Config) (*amqp.Connection, *broker.RabbitClient, error) {
 	conn, err := amqp.Dial(fmt.Sprintf("amqp://%s:%s@%s:%s/", cfg.RabbitUser, cfg.RabbitPassword, cfg.RabbitHost, cfg.RabbitPort))
 	if err != nil {
 		return conn, nil, fmt.Errorf("rabbitmq: error while creating connection - %e", err)
@@ -85,7 +85,7 @@ func rabbitConnection(cfg config.Config) (*amqp.Connection, *brokers.RabbitClien
 	if err != nil {
 		return conn, nil, fmt.Errorf("rabbitmq: error while creating queue - %e", err)
 	}
-	rabbitClient := brokers.NewRabbit(ch, &q)
+	rabbitClient := broker.NewRabbit(ch, &q)
 	log.Printf("rabbitmq: succsfully connected at %s:%s", cfg.RabbitHost, cfg.RabbitPort)
 	return conn, rabbitClient, nil
 }

@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/EgorBessonov/gRPC/internal/brokers"
+	"github.com/EgorBessonov/gRPC/internal/broker"
 	"github.com/EgorBessonov/gRPC/internal/model"
 	log "github.com/sirupsen/logrus"
 	"sync"
@@ -13,14 +13,14 @@ import (
 // OrderCache represent cache structure
 type OrderCache struct {
 	orders      map[string]*model.Order
-	rabbitCli   *brokers.RabbitClient
-	kafkaReader *brokers.KafkaReader
-	kafkaCli    *brokers.KafkaClient
+	rabbitCli   *broker.RabbitClient
+	kafkaReader *broker.KafkaReader
+	kafkaCli    *broker.KafkaClient
 	mutex       sync.Mutex
 }
 
 // NewCache return new cache instance and run kafka & rabbitmq consumers
-func NewCache(ctx context.Context, kafkaCli *brokers.KafkaClient, kafkaReader *brokers.KafkaReader, rabbitQueueName string, rabbitCli *brokers.RabbitClient) *OrderCache {
+func NewCache(ctx context.Context, kafkaCli *broker.KafkaClient, kafkaReader *broker.KafkaReader, rabbitQueueName string, rabbitCli *broker.RabbitClient) *OrderCache {
 	var cache OrderCache
 	cache.orders = make(map[string]*model.Order)
 	cache.rabbitCli = rabbitCli
