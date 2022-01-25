@@ -68,15 +68,17 @@ func NewCache(ctx context.Context, kafkaCli *broker.KafkaClient, kafkaReader *br
 				if err != nil {
 					log.Errorf("kafka consumer: %e", err)
 				}
-				message := model.OrderMessage{}
-				err = json.Unmarshal(msg.Value, &message)
-				if err != nil {
-					log.Errorf("kafka consumer: error while parsing message - %e", err)
-				}
-				if message.Method != "" {
-					err := cache.brokerHandler(message.Method, message.Data)
+				if msg.Value != nil {
+					message := model.OrderMessage{}
+					err = json.Unmarshal(msg.Value, &message)
 					if err != nil {
-						log.Errorf("kafka handler: %e", err)
+						log.Errorf("kafka consumer: error while parsing message - %e", err)
+					}
+					if message.Method != "" {
+						err := cache.brokerHandler(message.Method, message.Data)
+						if err != nil {
+							log.Errorf("kafka handler: %e", err)
+						}
 					}
 				}
 			}

@@ -92,7 +92,7 @@ func rabbitConnection(cfg config.Config) (*amqp.Connection, *broker.RabbitClient
 
 // return new kafka connection
 func kafkaConnection(cfg *config.Config) (*kafka.Conn, error) {
-	conn, err := kafka.DialLeader(context.Background(), "tcp", fmt.Sprint(cfg.KafkaHost+":"+cfg.KafkaPort), cfg.KafkaTopic, 0)
+	conn, err := kafka.DialLeader(context.Background(), "tcp", fmt.Sprintf("%s:%s", cfg.KafkaHost, cfg.KafkaPort), cfg.KafkaTopic, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -107,7 +107,7 @@ func kafkaConnection(cfg *config.Config) (*kafka.Conn, error) {
 // return kafka reader instance
 func kafkaReader(cfg *config.Config) (*kafka.Reader, error) {
 	reader := kafka.NewReader(kafka.ReaderConfig{
-		Brokers:        []string{fmt.Sprint("%s:%s", cfg.KafkaHost, cfg.KafkaPort)},
+		Brokers:        []string{fmt.Sprintf("%s:%s", cfg.KafkaHost, cfg.KafkaPort)},
 		GroupID:        cfg.KafkaGroupID,
 		Topic:          cfg.KafkaTopic,
 		MinBytes:       kafkaMinBytes,
@@ -142,7 +142,7 @@ func newgRPCServer(port string, s *server.Server) {
 	}
 	gServer := grpc.NewServer(grpc.UnaryInterceptor(unaryInterceptor))
 	ordercrud.RegisterCRUDServer(gServer, s)
-	fmt.Printf("gRPC server listening at %v", lis.Addr())
+	log.Printf("gRPC server listening at %s", lis.Addr())
 	if err = gServer.Serve(lis); err != nil {
 		log.Fatal("gRPC server failed - ", err)
 		return

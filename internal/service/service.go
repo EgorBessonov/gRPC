@@ -42,7 +42,7 @@ type CustomClaims struct {
 }
 
 // Registration method hash user password and after that save user in repository
-func (s Service) Registration(ctx context.Context, authUser *model.AuthUser) error {
+func (s *Service) Registration(ctx context.Context, authUser *model.AuthUser) error {
 	hPassword, err := hashPassword(authUser.Password)
 	if err != nil {
 		return err
@@ -56,7 +56,7 @@ func (s Service) Registration(ctx context.Context, authUser *model.AuthUser) err
 }
 
 // RefreshToken method checks refresh token for validity and if it's ok return new token pair
-func (s Service) RefreshToken(ctx context.Context, refreshTokenString string) (string, string, error) {
+func (s *Service) RefreshToken(ctx context.Context, refreshTokenString string) (string, string, error) {
 	keyFunc := func(t *jwt.Token) (interface{}, error) {
 		return []byte(os.Getenv("SECRETKEY")), nil
 	}
@@ -83,7 +83,7 @@ func (s Service) RefreshToken(ctx context.Context, refreshTokenString string) (s
 }
 
 // Authentication method check user password for validity and if it's correct return access and refresh tokens
-func (s Service) Authentication(ctx context.Context, email, password string) (string, string, error) {
+func (s *Service) Authentication(ctx context.Context, email, password string) (string, string, error) {
 	hashPassword, err := hashPassword(password)
 	if err != nil {
 		return "", "", err
@@ -99,7 +99,7 @@ func (s Service) Authentication(ctx context.Context, email, password string) (st
 }
 
 // UpdateAuthUser method update user instance in repository
-func (s Service) UpdateAuthUser(ctx context.Context, email string, refreshToken string) error {
+func (s *Service) UpdateAuthUser(ctx context.Context, email string, refreshToken string) error {
 	return s.rps.UpdateAuthUser(ctx, email, refreshToken)
 }
 
@@ -181,7 +181,7 @@ func getTokenFormContext(ctx context.Context) (string, error) {
 }
 
 // Save function method generate order uuid and after that save instance and repository
-func (s Service) Save(ctx context.Context, order *model.Order) (string, error) {
+func (s *Service) Save(ctx context.Context, order *model.Order) (string, error) {
 	order.OrderID = uuid.New().String()
 	err := s.cache.Save(order)
 	if err != nil {
@@ -195,7 +195,7 @@ func (s Service) Save(ctx context.Context, order *model.Order) (string, error) {
 }
 
 // Get method look through cache for order and if order wasn't found, method get it from repository and add it in cache
-func (s Service) Get(ctx context.Context, orderID string) (*model.Order, error) {
+func (s *Service) Get(ctx context.Context, orderID string) (*model.Order, error) {
 	order, found := s.cache.Get(orderID) // add second param as ok
 	if !found {
 		order, err := s.rps.Get(ctx, orderID)
@@ -212,7 +212,7 @@ func (s Service) Get(ctx context.Context, orderID string) (*model.Order, error) 
 }
 
 // Delete method delete order from repository and cache
-func (s Service) Delete(ctx context.Context, orderID string) error {
+func (s *Service) Delete(ctx context.Context, orderID string) error {
 	err := s.cache.Delete(orderID)
 	if err != nil {
 		return fmt.Errorf("service: can't delete order - %e", err)
@@ -225,7 +225,7 @@ func (s Service) Delete(ctx context.Context, orderID string) error {
 }
 
 // Update method update order instance in repository and cache
-func (s Service) Update(ctx context.Context, order *model.Order) error {
+func (s *Service) Update(ctx context.Context, order *model.Order) error {
 	err := s.cache.Update(order)
 	if err != nil {
 		return fmt.Errorf("service: can't update order - %e", err)
@@ -237,7 +237,7 @@ func (s Service) Update(ctx context.Context, order *model.Order) error {
 	return nil
 }
 
-func (s Service) UploadImage(imageName string, imageData bytes.Buffer) error {
+func (s *Service) UploadImage(imageName string, imageData bytes.Buffer) error {
 	imagePath := fmt.Sprintf("images/" + imageName)
 	file, err := os.Create(imagePath)
 	if err != nil {
