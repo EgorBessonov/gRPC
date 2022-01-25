@@ -152,7 +152,7 @@ func newgRPCServer(port string, s *server.Server) {
 // create interceptor for jwt authentication
 func unaryInterceptor(ctx context.Context, request interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 	switch info.FullMethod {
-	case "/protocol.CRUD/GetOrder", "/protocol.CRUD/SaveOrder", "/protocol.CRUD/UpdateOrder":
+	case "/protocol.CRUD/GetOrder", "/protocol.CRUD/SaveOrder", "/protocol.CRUD/DeleteOrder", "/protocol.CRUD/UpdateOrder":
 		if ok, err := service.ValidateToken(ctx); !ok {
 			log.Errorf("server: %e", err)
 			return nil, err
