@@ -1,0 +1,109 @@
+syntax = "proto3";
+
+package protocol;
+
+option go_package = "github.com/EgorBessonov/gRPC/proto/ordercrud";
+
+service CRUD{
+  rpc SaveOrder(SaveOrderRequest) returns (SaveOrderResponse);
+  rpc GetOrder(GetOrderRequest) returns (GetOrderResponse);
+  rpc UpdateOrder(UpdateOrderRequest) returns (UpdateOrderResponse);
+  rpc DeleteOrder(DeleteOrderRequest) returns (DeleteOrderResponse);
+  rpc Registration(RegistrationRequest) returns (RegistrationResponse);
+  rpc Authentication(AuthenticationRequest) returns (AuthenticationResponse);
+  rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse);
+  rpc Logout(LogoutRequest) returns (LogoutResponse);
+  rpc UploadImage(UploadImageRequest) returns (UploadImageResponse);
+}
+
+message Order{
+  string order_id = 1;
+  string order_name = 2;
+  int32 order_cost = 3;
+  bool is_delivered = 4;
+}
+
+message AuthUser{
+  string user_uuid = 1;
+  string user_name = 2;
+  string email = 3;
+  string password = 4;
+  string refresh_token = 5;
+  string expires_in = 6;
+}
+
+message SaveOrderRequest{
+  Order order = 1;
+}
+
+message SaveOrderResponse{
+  string order_id = 1;
+}
+
+message GetOrderRequest{
+  string order_id = 1;
+}
+
+message GetOrderResponse{
+  Order order = 1;
+}
+
+message UpdateOrderRequest{
+  Order order = 1;
+}
+
+message UpdateOrderResponse{
+  string result = 1;
+}
+
+message DeleteOrderRequest{
+  string order_id = 1;
+}
+
+message DeleteOrderResponse{
+  string result = 1;
+}
+
+message RegistrationRequest{
+  AuthUser auth_user = 1;
+}
+
+message RegistrationResponse{
+  string result = 1;
+}
+
+message AuthenticationRequest{
+  string email = 1;
+  string password = 2;
+}
+
+message AuthenticationResponse{
+  string access_token = 1;
+  string refresh_token = 2;
+}
+
+message RefreshTokenRequest{
+  string refresh_token = 1;
+}
+
+message RefreshTokenResponse{
+  string access_token = 1;
+  string refresh_token = 2;
+}
+
+message LogoutRequest{
+  string email = 1;
+}
+
+message LogoutResponse{
+  string result = 1;
+}
+
+message UploadImageRequest{
+  string image_name = 1;
+  bytes chunk_data = 2;
+}
+
+message UploadImageResponse{
+  string status = 1;
+}
