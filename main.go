@@ -46,7 +46,6 @@ func main() {
 	}()
 	cacheContext := context.Background()
 	kafkaConn, err := kafkaConnection(&cfg)
-	fmt.Printf("hi")
 	if err != nil {
 		log.Fatal("kafka: connection failed - %e", err)
 	}
@@ -65,6 +64,7 @@ func main() {
 	newgRPCServer(cfg.PortgRPC, gRPCServer)
 }
 
+// return new rabbit client instance
 func rabbitConnection(cfg config.Config) (*amqp.Connection, *brokers.RabbitClient, error) {
 	conn, err := amqp.Dial(fmt.Sprintf("amqp://%s:%s@%s:%s/", cfg.RabbitUser, cfg.RabbitPassword, cfg.RabbitHost, cfg.RabbitPort))
 	if err != nil {
@@ -90,6 +90,7 @@ func rabbitConnection(cfg config.Config) (*amqp.Connection, *brokers.RabbitClien
 	return conn, rabbitClient, nil
 }
 
+// return new kafka connection
 func kafkaConnection(cfg *config.Config) (*kafka.Conn, error) {
 	conn, err := kafka.DialLeader(context.Background(), "tcp", fmt.Sprint(cfg.KafkaHost+":"+cfg.KafkaPort), cfg.KafkaTopic, 0)
 	if err != nil {
@@ -103,6 +104,7 @@ func kafkaConnection(cfg *config.Config) (*kafka.Conn, error) {
 	return conn, nil
 }
 
+// return kafka reader instance
 func kafkaReader(cfg *config.Config) (*kafka.Reader, error) {
 	reader := kafka.NewReader(kafka.ReaderConfig{
 		Brokers:        []string{fmt.Sprint("%s:%s", cfg.KafkaHost, cfg.KafkaPort)},
@@ -116,6 +118,7 @@ func kafkaReader(cfg *config.Config) (*kafka.Reader, error) {
 	return reader, nil
 }
 
+// create new postgresdb connection
 func dbConnection(cfg config.Config) repository.Repository {
 	conn, err := pgxpool.Connect(context.Background(), cfg.PostgresdbURL)
 	if err != nil {
@@ -131,6 +134,7 @@ func dbConnection(cfg config.Config) repository.Repository {
 	return repository.PostgresRepository{DBconn: conn}
 }
 
+// start gRPC server
 func newgRPCServer(port string, s *server.Server) {
 	lis, err := net.Listen("tcp", port)
 	if err != nil {
@@ -145,6 +149,7 @@ func newgRPCServer(port string, s *server.Server) {
 	}
 }
 
+// create interceptor for jwt authentication
 func unaryInterceptor(ctx context.Context, request interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 	switch info.FullMethod {
 	case "/protocol.CRUD/GetOrder", "/protocol.CRUD/SaveOrder", "/protocol.CRUD/UpdateOrder":
